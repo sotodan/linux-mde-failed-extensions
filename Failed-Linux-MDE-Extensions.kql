@@ -1,0 +1,53 @@
+Resources
+| where type == 'microsoft.hybridcompute/machines'
+| project
+  id,
+  JoinID = toupper(id),
+  ComputerName = tostring(properties.osProfile.computerName),
+  OSName = tostring(properties.osName)
+| join kind=leftouter(
+  Resources
+  | where type == 'microsoft.hybridcompute/machines/extensions'
+  | project
+    MachineId = toupper(substring(id, 0, indexof(id, '/extensions'))),
+    ExtensionName = name,
+    ExtensionStatus = tostring(properties.provisioningState),
+    ExtensionMessage = tostring(properties.statuses[0].message),
+    ExtensionType = tostring(properties.type),
+    EnableAutomaticUpgrade = tostring(properties.enableAutomaticUpgrade),
+    AutoUpgradeMinorVersion = tostring(properties.autoUpgradeMinorVersion),
+    TypeHandlerVersion = tostring(properties.typeHandlerVersion),
+    Publisher = tostring(properties.publisher),
+    InstanceViewName = tostring(properties.instanceView.name),
+    InstanceViewType = tostring(properties.instanceView.type),
+    InstanceViewStatusMessage = tostring(properties.instanceView.status.message),
+    InstanceViewStatusLevel = tostring(properties.instanceView.status.level),
+    InstanceViewStatusCode = tostring(properties.instanceView.status.code),
+    InstanceViewTypeHandlerVersion = tostring(properties.instanceView.typeHandlerVersion),
+    SettingsForceReOnboarding = tostring(properties.settings.forceReOnboarding),
+    SettingsAzureResourceId = tostring(properties.settings.azureResourceId),
+    SettingsVNextEnabled = tostring(properties.settings.vNextEnabled),
+    SettingsAutoUpdate = tostring(properties.settings.autoUpdate)
+) on $left.JoinID == $right.MachineId
+| where ExtensionStatus == 'Failed' // Filter only failed extensions
+| summarize Extensions = make_list(pack(
+    'Name', ExtensionName,
+    'Status', ExtensionStatus,
+    'Message', ExtensionMessage,
+    'Type', ExtensionType,
+    'EnableAutomaticUpgrade', EnableAutomaticUpgrade,
+    'AutoUpgradeMinorVersion', AutoUpgradeMinorVersion,
+    'TypeHandlerVersion', TypeHandlerVersion,
+    'Publisher', Publisher,
+    'InstanceViewName', InstanceViewName,
+    'InstanceViewType', InstanceViewType,
+    'InstanceViewStatusMessage', InstanceViewStatusMessage,
+    'InstanceViewStatusLevel', InstanceViewStatusLevel,
+    'InstanceViewStatusCode', InstanceViewStatusCode,
+    'InstanceViewTypeHandlerVersion', InstanceViewTypeHandlerVersion,
+    'SettingsForceReOnboarding', SettingsForceReOnboarding,
+    'SettingsAzureResourceId', SettingsAzureResourceId,
+    'SettingsVNextEnabled', SettingsVNextEnabled,
+    'SettingsAutoUpdate', SettingsAutoUpdate
+)) by id, ComputerName, OSName
+| order by tolower(OSName) asc
