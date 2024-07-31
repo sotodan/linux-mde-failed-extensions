@@ -1,20 +1,15 @@
 # linux-mde-failed-extensions
 This KQL (Kusto Query Language) script is designed to identify and summarize failed extensions on hybrid compute machines. Here’s a breakdown of what it does:
 
-Overview
+# Overview
 
-The script performs the following steps:
+# The script performs the following steps:
 
 Filter Machines: Filters resources to include only those of type microsoft.hybridcompute/machines.
-
 Project Machine Details: Selects specific properties of these machines, including:
-
 id: The unique identifier of the machine.
-
 JoinID: The machine ID converted to uppercase for joining purposes.
-
 ComputerName: The computer name from the machine’s OS profile.
-
 OSName: The operating system name.
 
 Join with Extensions: Performs a left outer join with resources of type microsoft.hybridcompute/machines/extensions, matching machines with their corresponding extensions based on the machine ID.
@@ -34,10 +29,10 @@ Summarize Extensions: Summarizes the failed extensions for each machine, creatin
 
 Order by OS Name: Orders the results by the operating system name in ascending order.
 
-Usage
+## Usage
 To use this script, simply run it in your Kusto environment. Ensure you have the necessary permissions to access the microsoft.hybridcompute/machines and microsoft.hybridcompute/machines/extensions resources.
 
-Example
+# Example
 // Filter Machines
 let machines = 
     resources
@@ -61,6 +56,3 @@ failedExtensions
 
 Contributing
 Feel free to submit issues or pull requests if you have suggestions for improvements or find any bugs.
-
-License
-This project is licensed under the MIT License.
